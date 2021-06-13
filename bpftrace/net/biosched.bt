@@ -1,0 +1,36 @@
+#!/usr/bin/env bpftrace
+/*
+ * biosched - shows the stats and time taken processing context switches.
+ *
+ */
+
+#include <linux/sched.h>
+
+BEGIN
+{
+	printf("Tracing CPU scheduler... Hit Ctrl-C to end.\n");
+}
+
+tracepoint:sched:sched_wakeup,
+tracepoint:sched:sched_wakeup_new
+{
+	@qtime[args->pid] = nsecs;
+}
+
+tracepoint:sched:sched_switch
+{
+	if (args->prev_state == TASK_RUNNING) {
+		@qtime[args->prev_pid] = nsecs;
+	}
+
+	$ns = @qtime[args->next_pid];
+	if ($ns) {
+		@usecs[args->prev_state] = hist((nsecs - $ns) / 1000);
+	}
+	delete(@qtime[args->next_pid]);
+}
+
+END
+{
+	clear(@qtime);
+}

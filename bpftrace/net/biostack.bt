@@ -1,0 +1,85 @@
+#!/usr/bin/env bpftrace
+/*
+ * biostacks - Shows latency of the functions along the network stack.
+ *
+ */
+#include <linux/sched.h>
+
+BEGIN
+{
+	printf("Tracing latency of network stack funtions. Hit Ctrl-C to end.\n");
+    @begin = nsecs;
+}
+
+kprobe:net_rx_action
+{
+	@t[tid] = nsecs;
+    @stage[tid] = 1;
+}
+
+kprobe:napi_complete_done
+/@t[tid] && cpu == 2/
+{
+    @q1 = stats((nsecs - @t[tid])/1000);
+	@t[tid] = nsecs;
+    @stage[tid] = 2;
+}
+
+tracepoint:net:netif_receive_skb
+/@t[tid] && cpu == 2/
+{
+    @q2 = stats((nsecs - @t[tid])/1000);
+	@t[tid] = nsecs;
+    @stage[tid] = 3;
+}
+
+kprobe:ip_rcv
+/@t[tid] && cpu == 2/
+{
+    @q3 = stats((nsecs - @t[tid])/1000);
+	@t[tid] = nsecs;
+    @stage[tid] = 4;
+}
+
+kprobe:ip_local_deliver
+/@t[tid] && cpu == 2/
+{
+    @q4 = stats((nsecs - @t[tid])/1000);
+	@t[tid] = nsecs;
+    @stage[tid] = 5;
+}
+
+kprobe:udp_rcv
+/@t[tid] && cpu == 2/
+{
+    @q5 = stats((nsecs - @t[tid])/1000);
+	@t[tid] = nsecs;
+    @stage[tid] = 6;
+	delete(@t[tid]);
+}
+
+kprobe:finish_task_switch
+/cpu == 2/
+{
+    $prev = (struct task_struct *)arg0;
+    if(@t[$prev->pid]) {
+        @ts[$prev->pid] = nsecs;
+    }
+
+    if (@ts[tid] && @stage[tid]) {
+        @us[tid, @stage[tid]] = stats((nsecs - @ts[tid])/1000);
+        delete(@ts[tid]);
+    }
+}
+
+END
+{
+    printf("ran for %d ns \n", (nsecs - @begin));
+    clear(@begin);
+    clear(@t);
+    clear(@stage);
+    clear(@ts);
+}
+
+
+

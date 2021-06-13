@@ -1,0 +1,82 @@
+#!/usr/bin/env bpftrace
+/*
+ * biostacks - Shows latency of the functions along the network stack.
+ *
+ */
+
+BEGIN
+{
+	printf("Tracing latency of network stack funtions. Hit Ctrl-C to end.\n");
+    @begin = nsecs;
+}
+
+kprobe:__napi_schedule
+{
+	@napistart[tid] = nsecs;
+}
+
+kretprobe:__napi_schedule
+/@napistart[tid]/
+{
+	@napiusecs = hist((nsecs - @napistart[tid])/1000);
+	delete(@napistart[tid]);
+}
+
+kprobe:net_rx_action
+{
+	@netrxstart[tid] = nsecs;
+}
+
+kretprobe:net_rx_action
+/@netrxstart[tid]/
+{
+	@netrxusecs = hist((nsecs - @netrxstart[tid])/1000);
+	delete(@netrxstart[tid]);
+}
+
+kprobe:netif_receive_skb
+{
+	@netifstart[tid] = nsecs;
+}
+
+kretprobe:netif_receive_skb
+/@netifstart[tid]/
+{
+	@netifusecs = hist((nsecs - @netifstart[tid])/1000);
+	delete(@netifstart[tid]);
+}
+
+kprobe:ip_rcv
+{
+	@iprcvstart[tid] = nsecs;
+}
+
+kretprobe:ip_rcv_finish
+/@iprcvstart[tid]/
+{
+	@iprcvusecs = hist((nsecs - @iprcvstart[tid])/1000);
+	delete(@iprcvstart[tid]);
+}
+
+kprobe:ip_local_deliver
+{
+	@iplocalstart[tid] = nsecs;
+}
+
+kretprobe:ip_local_deliver_finish
+/@iplocalstart[tid]/
+{
+	@iplocalusecs = hist((nsecs - @iplocalstart[tid])/1000);
+	delete(@iplocalstart[tid]);
+}
+
+END
+{
+    printf("\n Ran for %d s \n", (nsecs - @begin)/1000000000);
+    clear(@begin);
+	clear(@napistart);
+	clear(@netrxstart);
+	clear(@netifstart);
+	clear(@iprcvstart);
+	clear(@iplocalstart);
+}
