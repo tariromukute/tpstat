@@ -12,54 +12,70 @@ BEGIN
 }
 
 kprobe:net_rx_action
+/cpu == 2/
 {
 	@t[tid] = nsecs;
     @stage[tid] = 1;
 }
 
 kprobe:napi_complete_done
-/@t[tid] && cpu == 2/
+/cpu == 2/
 {
-    @q1 = stats((nsecs - @t[tid])/1000);
+    if (@t[tid] && @stage[tid] == 1) {
+    @q1[comm] = stats((nsecs - @t[tid]));
+    }
 	@t[tid] = nsecs;
     @stage[tid] = 2;
 }
 
 tracepoint:net:netif_receive_skb
-/@t[tid] && cpu == 2/
+/cpu == 2/
 {
-    @q2 = stats((nsecs - @t[tid])/1000);
+    if (@t[tid] && @stage[tid] == 2) {
+    @q2[comm] = stats((nsecs - @t[tid]));
+    }
 	@t[tid] = nsecs;
     @stage[tid] = 3;
 }
 
 kprobe:ip_rcv
-/@t[tid] && cpu == 2/
+/cpu == 2/
 {
-    @q3 = stats((nsecs - @t[tid])/1000);
+    if (@t[tid] && @stage[tid] == 3) {
+    @q3[comm] = stats((nsecs - @t[tid]));
+    }
 	@t[tid] = nsecs;
     @stage[tid] = 4;
 }
 
 kprobe:ip_local_deliver
-/@t[tid] && cpu == 2/
+/cpu == 2/
 {
-    @q4 = stats((nsecs - @t[tid])/1000);
+    if (@t[tid] && @stage[tid] == 3) {
+    @q4[comm] = stats((nsecs - @t[tid]));
+    }
 	@t[tid] = nsecs;
     @stage[tid] = 5;
 }
 
 kprobe:udp_rcv
-/@t[tid] && cpu == 2/
+/cpu == 2/
 {
-    @q5 = stats((nsecs - @t[tid])/1000);
+    if (@t[tid] && @stage[tid] == 5) {
+    @q5[comm] = stats((nsecs - @t[tid]));
+    }
 	@t[tid] = nsecs;
     @stage[tid] = 6;
 	delete(@t[tid]);
 }
 
+tracepoint:sched:sched_wakeup,
+tracepoint:sched:sched_wakeup_new
+{
+    @cs[args->pid] = nsecs;
+}
+
 kprobe:finish_task_switch
-/cpu == 2/
 {
     $prev = (struct task_struct *)arg0;
     if(@t[$prev->pid]) {
@@ -67,18 +83,24 @@ kprobe:finish_task_switch
     }
 
     if (@ts[tid] && @stage[tid]) {
-        @us[tid, @stage[tid]] = stats((nsecs - @ts[tid])/1000);
+        @us[tid, @stage[tid]] = stats((nsecs - @ts[tid]));
         delete(@ts[tid]);
+    }
+
+    if (@cs[tid]) {
+        @uc[cpu] = stats((nsecs - @cs[tid]));
+        delete(@cs[tid]);
     }
 }
 
 END
 {
-    printf("ran for %d ns \n", (nsecs - @begin));
+    printf("ran for %d qs \n", (nsecs - @begin)/1000);
     clear(@begin);
     clear(@t);
     clear(@stage);
     clear(@ts);
+    clear(@cs)
 }
 
 
