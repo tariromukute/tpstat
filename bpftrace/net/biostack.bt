@@ -100,7 +100,8 @@ END
     clear(@t);
     clear(@stage);
     clear(@ts);
-    clear(@cs)
+    clear(@cs);
+    clear(@us);
 }
 
 
