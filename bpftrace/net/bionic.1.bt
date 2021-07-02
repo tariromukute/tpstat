@@ -1,0 +1,107 @@
+#!/usr/bin/env bpftrace
+/*
+ * biostacks - Shows latency of the functions along the network stack.
+ *
+ */
+#include <linux/sched.h>
+
+BEGIN
+{
+	printf("Tracing latency of network stack funtions. Hit Ctrl-C to end.\n");
+    @begin = nsecs;
+}
+
+/* The */
+
+kprobe:i40e_clean_rx_irq
+/cpu == 2/
+{
+    @scope[tid] = nsecs;
+}
+
+kprobe:i40e_alloc_rx_buffers
+/cpu == 2 && @scope[tid]/
+{
+    @t[tid] = nsecs;
+}
+
+kretprobe:i40e_alloc_rx_buffers
+/cpu == 2 && @scope[tid]/
+{
+    @talloc = stats((nsecs - @t[tid]));
+    delete(@alloc[tid]);
+}
+
+kprobe:build_skb
+/cpu == 2 && @scope[tid]/
+{
+    @t[tid] = nsecs;
+}
+
+kretprobe:build_skb
+/cpu == 2 && @scope[tid]/
+{
+    @tbuild = stats((nsecs - @t[tid]));
+    delete(@build[tid]);
+}
+
+kprobe:skb_put
+/cpu == 2 && @scope[tid]/
+{
+    @t[tid] = nsecs;
+}
+
+kretprobe:skb_put
+/cpu == 2 && @scope[tid]/
+{
+    @tput = stats((nsecs - @t[tid]));
+    delete(@put[tid]);
+}
+
+kprobe:__napi_alloc_skb
+/cpu == 2 && @scope[tid]/
+{
+    @t[tid] = nsecs;
+}
+
+kretprobe:__napi_alloc_skb
+/cpu == 2 && @scope[tid]/
+{
+    @tnapialloc = stats((nsecs - @t[tid]));
+    delete(@napialloc[tid]);
+}
+
+kprobe:napi_gro_receive
+/cpu == 2 && @scope[tid]/
+{
+    @t[tid] = nsecs;
+}
+
+kretprobe:napi_gro_receive
+/cpu == 2 && @scope[tid]/
+{
+    @tgro = stats((nsecs - @t[tid]));
+    delete(@gro[tid]);
+}
+
+kretprobe:i40e_clean_rx_irq
+/cpu == 2 && @scope[tid]/
+{
+    @tscope = stats((nsecs - @scope[tid]));
+    @budget = hist(retval);
+    delete(@scope[tid]);
+}
+
+END
+{
+    printf("ran for %d qs \n", (nsecs - @begin)/1000);
+    clear(@begin);
+    clear(@scope);
+    clear(@t);
+    clear(@talloc);
+    clear(@tput);
+    clear(@tnapialloc);
+    clear(@tgro);
+    clear(@tbuild);
+    clear(@budget);
+}
