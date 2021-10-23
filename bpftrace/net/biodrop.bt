@@ -1,0 +1,90 @@
+#!/usr/bin/env bpftrace
+/*
+ * biostacks - Shows latency of the functions along the network stack.
+ *
+ */
+#include <linux/sched.h>
+#include <linux/netdevice.h>
+#include <linux/percpu-defs.h>
+#include <linux/percpu.h>
+#include <asm/local.h>
+
+BEGIN
+{
+    printf("Tracing latency of network stack funtions. Hit Ctrl-C to end.\n");
+    @begin = nsecs;
+}
+
+kretprobe:ip_local_deliver /cpu == 169/ 
+{ 
+    @iplocal[(int32)retval] = count(); 
+} 
+
+kretprobe:udp_queue_rcv_one_skb  /cpu == 169/
+{
+    @udpqueue[(int32)retval] = count(); 
+}
+
+kretprobe:ip_rcv /cpu == 169/
+{
+     @iprcv[retval] = count();
+}
+
+/*
+ *	Return values (usually ignored):
+ *	NET_RX_SUCCESS (0): no congestion
+ *	NET_RX_DROP (1): packet was dropped
+ */
+tracepoint:net:netif_receive_skb_exit /cpu == 169/
+{
+    @rcvskb[args->ret] = count();
+}
+
+/*
+ *	NET_RX_SUCCESS (0)	(no congestion)
+ *	NET_RX_DROP (1)     (packet was dropped)
+ */
+tracepoint:net:netif_rx_exit /cpu == 169/
+{
+    @netif[args->ret] = count();
+}
+
+kretprobe:ip_rcv_finish /cpu == 169/
+{
+    @iprcvfinish[retval] = count();
+}
+
+/*
+ * GRO_MERGED (0),
+ * GRO_MERGED_FREE (1),
+ * GRO_HELD (2),
+ * GRO_NORMAL (3),
+ * GRO_DROP (4),
+ * GRO_CONSUMED (5),
+ */
+tracepoint:net:napi_gro_receive_exit /cpu == 169/
+{
+    @gro[args->ret] = count();
+}
+
+tracepoint:syscalls:sys_exit_recvfrom /cpu == 169/
+{
+    @recvfrom[args->ret] = count();
+}
+
+interval:s:60
+{ 
+    print(@iplocal); clear(@iplocal);
+    print(@udpqueue); clear(@udpqueue);
+    print(@rcvskb); clear(@rcvskb);
+    print(@gro); clear(@gro);
+    print(@netif); clear(@netif);
+    print(@iprcv); clear(@iprcv);
+    print(@iprcvfinish); clear(@iprcvfinish);
+    print(@recvfrom); clear(@recvfrom);
+}
+
+END
+{
+    printf("ran for %d qs \n", (nsecs - @begin)/1000);
+}

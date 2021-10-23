@@ -1,0 +1,36 @@
+#!/usr/bin/env bpftrace
+/*
+ * biostacks - Shows latency of the functions along the network stack.
+ *
+ */
+#include <linux/sched.h>
+#include <linux/netdevice.h>
+#include <linux/percpu-defs.h>
+#include <linux/percpu.h>
+#include <asm/local.h>
+
+BEGIN
+{
+    printf("Tracing latency of network stack funtions. Hit Ctrl-C to end.\n");
+    @begin = nsecs;
+}
+
+kprobe:net_rx_action
+/cpu == 169/ 
+{
+    $sd = (struct softnet_data *) &per_cpu(softnet_data, 169);
+    printf("time_squeeze %d \n", sd->time_squeeze);
+}
+
+END
+{
+    printf("ran for %d qs \n", (nsecs - @begin)/1000);
+}
+
+bpftrace -e 'kretprobe:ip_local_deliver { @drop[retval] = count(); } interval:s:5 { print(@drop); clear(@drop); }'
+
+udp_queue_rcv_one_skb - dropping if the queue is full
+
+ __udp4_lib_rcv -> when there is no app listenning on port
+
+ 

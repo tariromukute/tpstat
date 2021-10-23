@@ -1,0 +1,17 @@
+
+Doing aes-256 cbc for 20s on 16 size blocks: 104006642 aes-256 cbc's in 9.97s
+Doing aes-256 cbc for 20s on 64 size blocks: 26907735 aes-256 cbc's in 9.96s
+Doing aes-256 cbc for 20s on 256 size blocks: 6752517 aes-256 cbc's in 9.97s
+Doing aes-256 cbc for 20s on 1024 size blocks: 1696077 aes-256 cbc's in 9.96s
+Doing aes-256 cbc for 20s on 8192 size blocks: 212370 aes-256 cbc's in 9.97s
+Doing aes-256 cbc for 20s on 16384 size blocks: 106045 aes-256 cbc's in 9.95s
+
+--
+[  3] local 10.0.0.1 port 55340 connected with 10.0.0.2 port 5001
+[ ID] Interval       Transfer     Bandwidth
+[  3]  0.0-122.0 sec  71.0 GBytes  5.00 Gbits/sec
+[  3] Sent 51870749 datagrams
+[  3] Server Report:
+[  3]  0.0-122.0 sec  29.5 GBytes  2.08 Gbits/sec   0.004 ms 30341241/51870749 (58%)
+
+0.0-122.0 sec  29.5 GBytes  2.08 Gbits/sec   0.005 ms 30341241/51870749 (58%)

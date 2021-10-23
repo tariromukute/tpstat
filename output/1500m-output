@@ -1,0 +1,46 @@
+@q1[openssl]: count 54052, average 1358, total 73437096
+@q1[ksoftirqd/169]: count 858, average 1613, total 1384109
+@q1[swapper/169]: count 903, average 3000, total 2709324
+@q1[kworker/169:2]: count 27, average 3265, total 88156
+@q1[iperf]: count 52, average 4575, total 237926
+@q1[kworker/169:1]: count 10, average 4799, total 47990
+
+@q2[openssl]: count 237057, average 538, total 127610833
+@q2[ksoftirqd/169]: count 2527, average 640, total 1618651
+@q2[swapper/169]: count 3176, average 1065, total 3384308
+@q2[iperf]: count 54, average 1514, total 81766
+@q2[kworker/169:2]: count 36, average 2076, total 74755
+@q2[kworker/169:1]: count 19, average 2498, total 47463
+
+
+@q4[openssl]: count 2074472, average 938, total 1947254256
+@q4[ksoftirqd/169]: count 7211, average 1009, total 7280213
+@q4[kworker/169:1]: count 109, average 1304, total 142243
+@q4[kworker/169:2]: count 110, average 1348, total 148318
+@q4[swapper/169]: count 31769, average 1591, total 50570738
+@q4[iperf]: count 65, average 2225, total 144668
+
+@q5[openssl]: count 15269406, average 431, total 6594805563
+@q5[kworker/169:1]: count 762, average 481, total 366772
+@q5[ksoftirqd/169]: count 45717, average 494, total 22590075
+@q5[kworker/169:2]: count 696, average 508, total 353770
+@q5[swapper/169]: count 244334, average 701, total 171342160
+@q5[iperf]: count 312, average 965, total 301257
+
+
+
+
+@uc: count 320716, average 5185, total 1662963174
+
+---
+
+Doing aes-256 cbc for 20s on 16 size blocks: 1159490948 aes-256 cbc's in 17.51s
+Doing aes-256 cbc for 20s on 64 size blocks: 41211616 aes-256 cbc's in 17.24s
+Doing aes-256 cbc for 20s on 256 size blocks: 10361461 aes-256 cbc's in 16.97s
+Doing aes-256 cbc for 20s on 1024 size blocks: 2603091 aes-256 cbc's in 17.80s
+Doing aes-256 cbc for 20s on 8192 size blocks: 325631 aes-256 cbc's in 18.40s
+Doing aes-256 cbc for 20s on 16384 size blocks: 162857 aes-256 cbc's in 18.54s
+
+--
+
+0.0-122.0 sec  21.3 GBytes  1.50 Gbits/sec   0.011 ms  595/15561226 (0.0038%)

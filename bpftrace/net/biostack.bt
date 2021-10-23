@@ -4,6 +4,8 @@
  *
  */
 #include <linux/sched.h>
+#include <linux/netdevice.h>
+#include <linux/percpu-defs.h>
 
 BEGIN
 {
@@ -12,14 +14,14 @@ BEGIN
 }
 
 kprobe:net_rx_action
-/cpu == 2/
+/cpu == 169/
 {
 	@t[tid] = nsecs;
     @stage[tid] = 1;
 }
 
 kprobe:napi_complete_done
-/cpu == 2/
+/cpu == 169/
 {
     if (@t[tid] && @stage[tid] == 1) {
     @q1[comm] = stats((nsecs - @t[tid]));
@@ -29,7 +31,7 @@ kprobe:napi_complete_done
 }
 
 tracepoint:net:netif_receive_skb
-/cpu == 2/
+/cpu == 169/
 {
     if (@t[tid] && @stage[tid] == 2) {
     @q2[comm] = stats((nsecs - @t[tid]));
@@ -39,7 +41,7 @@ tracepoint:net:netif_receive_skb
 }
 
 kprobe:ip_rcv
-/cpu == 2/
+/cpu == 169/
 {
     if (@t[tid] && @stage[tid] == 3) {
     @q3[comm] = stats((nsecs - @t[tid]));
@@ -49,7 +51,7 @@ kprobe:ip_rcv
 }
 
 kprobe:ip_local_deliver
-/cpu == 2/
+/cpu == 169/
 {
     if (@t[tid] && @stage[tid] == 3) {
     @q4[comm] = stats((nsecs - @t[tid]));
@@ -59,7 +61,7 @@ kprobe:ip_local_deliver
 }
 
 kprobe:udp_rcv
-/cpu == 2/
+/cpu == 169/
 {
     if (@t[tid] && @stage[tid] == 5) {
     @q5[comm] = stats((nsecs - @t[tid]));
@@ -88,9 +90,29 @@ kprobe:finish_task_switch
     }
 
     if (@cs[tid]) {
-        @uc[cpu] = stats((nsecs - @cs[tid]));
+        @uc = stats((nsecs - @cs[tid]));
         delete(@cs[tid]);
     }
+}
+
+tracepoint:napi:napi_poll /cpu == 169/ { @work[args->work] = count(); }
+kfunc:net_rps_action_and_irq_enable { $sd = (struct softnet_data *)arg0; printf("time_squeeze %d \n", sd->time_squeeze); }
+
+kprobe:net_rx_action
+/cpu == 169/ 
+{
+    $sd = (struct softnet_data *)this_cpu_ptr(&softnet_data);
+    printf("time_squeeze %d \n", sd->time_squeeze);
+} 
+
+interval:s:1
+{ 
+    print(@q1);clear(@q1);
+    print(@q2);clear(@q2);
+    print(@q3);clear(@q3);
+    print(@q4);clear(@q4);
+    print(@q5);clear(@q5);
+    print(@uc);clear(@uc);      
 }
 
 END
@@ -103,6 +125,3 @@ END
     clear(@cs);
     clear(@us);
 }
-
-
-

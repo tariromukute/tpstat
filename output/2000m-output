@@ -1,0 +1,50 @@
+@q1[openssl]: count 63178, average 1485, total 93843249
+@q1[ksoftirqd/169]: count 4460, average 1739, total 7757421
+@q1[swapper/169]: count 2190, average 3416, total 7481756
+@q1[kworker/169:2]: count 21, average 3434, total 72133
+@q1[kworker/169:0]: count 13, average 3649, total 47437
+@q1[iperf]: count 14, average 4929, total 69018
+@q1[taskset]: count 2, average 12418, total 24837
+
+@q2[openssl]: count 258285, average 561, total 145120869
+@q2[ksoftirqd/169]: count 12835, average 629, total 8075706
+@q2[swapper/169]: count 3148, average 1053, total 3316462
+@q2[kworker/169:2]: count 43, average 1564, total 67257
+@q2[kworker/169:0]: count 31, average 1869, total 57939
+@q2[iperf]: count 17, average 2726, total 46357
+@q2[taskset]: count 3, average 12436, total 37310
+
+
+@q4[openssl]: count 2663455, average 946, total 2521913921
+@q4[ksoftirqd/169]: count 60616, average 959, total 58181374
+@q4[kworker/169:2]: count 316, average 1067, total 337286
+@q4[kworker/169:0]: count 353, average 1068, total 377169
+@q4[swapper/169]: count 41621, average 1629, total 67800879
+@q4[iperf]: count 30, average 2129, total 63891
+@q4[taskset]: count 37, average 2581, total 95499
+
+@q5[openssl]: count 19988179, average 434, total 8683513517
+@q5[ksoftirqd/169]: count 434197, average 446, total 193788701
+@q5[kworker/169:2]: count 2337, average 447, total 1044654
+@q5[kworker/169:0]: count 2691, average 450, total 1211847
+@q5[swapper/169]: count 320428, average 714, total 228840074
+@q5[taskset]: count 288, average 820, total 236336
+@q5[iperf]: count 182, average 847, total 154282
+
+
+
+
+@uc: count 371226, average 5571, total 2068183838
+
+---
+
+Doing aes-256 cbc for 20s on 16 size blocks: 143397337 aes-256 cbc's in 11.61s
+Doing aes-256 cbc for 20s on 64 size blocks: 37147205 aes-256 cbc's in 11.43s
+Doing aes-256 cbc for 20s on 256 size blocks: 9331844 aes-256 cbc's in 11.38s
+Doing aes-256 cbc for 20s on 1024 size blocks: 2343321 aes-256 cbc's in 11.44s
+Doing aes-256 cbc for 20s on 8192 size blocks: 292992 aes-256 cbc's in 11.38s
+Doing aes-256 cbc for 20s on 16384 size blocks: 146523 aes-256 cbc's in 11.47s
+
+---
+
+0.0-122.0 sec  28.4 GBytes  2.00 Gbits/sec   0.007 ms 1195/20748301 (0.0058%)
