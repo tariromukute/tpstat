@@ -15,17 +15,25 @@ BEGIN
     @begin = nsecs;
 }
 
-kretprobe:ip_local_deliver /cpu == 169/ 
+kretprobe:ip_local_deliver 
 { 
     @iplocal[(int32)retval] = count(); 
 } 
 
-kretprobe:udp_queue_rcv_one_skb  /cpu == 169/
+/* returns:
+ *  -1: error
+ *   0: success
+ *  >0: "udp encap" protocol resubmission
+ *
+ * Note that in the success and error cases, the skb is assumed to
+ * have either been requeued or freed.
+ */
+kretprobe:udp_queue_rcv_one_skb 
 {
     @udpqueue[(int32)retval] = count(); 
 }
 
-kretprobe:ip_rcv /cpu == 169/
+kretprobe:ip_rcv
 {
      @iprcv[retval] = count();
 }
@@ -35,7 +43,7 @@ kretprobe:ip_rcv /cpu == 169/
  *	NET_RX_SUCCESS (0): no congestion
  *	NET_RX_DROP (1): packet was dropped
  */
-tracepoint:net:netif_receive_skb_exit /cpu == 169/
+tracepoint:net:netif_receive_skb_exit
 {
     @rcvskb[args->ret] = count();
 }
@@ -44,12 +52,12 @@ tracepoint:net:netif_receive_skb_exit /cpu == 169/
  *	NET_RX_SUCCESS (0)	(no congestion)
  *	NET_RX_DROP (1)     (packet was dropped)
  */
-tracepoint:net:netif_rx_exit /cpu == 169/
+tracepoint:net:netif_rx_exit
 {
     @netif[args->ret] = count();
 }
 
-kretprobe:ip_rcv_finish /cpu == 169/
+kretprobe:ip_rcv_finish
 {
     @iprcvfinish[retval] = count();
 }
@@ -62,12 +70,15 @@ kretprobe:ip_rcv_finish /cpu == 169/
  * GRO_DROP (4),
  * GRO_CONSUMED (5),
  */
-tracepoint:net:napi_gro_receive_exit /cpu == 169/
+tracepoint:net:napi_gro_receive_exit
 {
     @gro[args->ret] = count();
 }
 
-tracepoint:syscalls:sys_exit_recvfrom /cpu == 169/
+/*
+ * recvfrom is passed an output buffer. The return value of recvfrom tells you how many bytes were filled in.
+ */
+tracepoint:syscalls:sys_exit_recvfrom
 {
     @recvfrom[args->ret] = count();
 }
@@ -76,12 +87,13 @@ interval:s:60
 { 
     print(@iplocal); clear(@iplocal);
     print(@udpqueue); clear(@udpqueue);
-    print(@rcvskb); clear(@rcvskb);
+    print(@rcvskb); clear(@rcvskb); 
     print(@gro); clear(@gro);
     print(@netif); clear(@netif);
     print(@iprcv); clear(@iprcv);
     print(@iprcvfinish); clear(@iprcvfinish);
     print(@recvfrom); clear(@recvfrom);
+    printf("End %d ms -----------\n", (nsecs - @begin)/1000000));
 }
 
 END

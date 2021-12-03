@@ -1,0 +1,37 @@
+#!/usr/local/bin/bpftrace
+
+#include <linux/skbuff.h>
+#include <linux/netdevice.h>
+
+BEGIN
+{
+        printf("Tracing net device xmit queue latency. Hit Ctrl-C to end.\n");
+}
+
+/* Issues packet to the device queue */
+tracepoint:net:net_dev_start_xmit
+{
+        @start[args->skbaddr] = nsecs;
+}
+
+/* Frees the packet which occurs when the device has completed sending it */
+tracepoint:skb:consume_skb
+/@start[args->skbaddr]/
+{
+        $skb = (struct sk_buff *)args->skbaddr;
+
+        @us[$skb->dev->name] = hist((nsecs - @start[args->skbaddr]) / 1000);
+        delete(@start[args->skbaddr]);
+}
+
+/* Some times the packets don't pass through tracepoint:skb:consume_skb so delete to avoid reuse */
+tracepoint:net:net_dev_queue
+{
+        // avoid timestamp reuse:
+        delete(@start[args->skbaddr]);
+}
+
+END
+{
+        clear(@start);
+}

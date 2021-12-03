@@ -1,0 +1,6 @@
+#!/usr/local/bin/bpftrace
+
+profile:hz:49 /pid/ 
+{ 
+    @samples[ustack, kstack, comm] = count(); 
+}
