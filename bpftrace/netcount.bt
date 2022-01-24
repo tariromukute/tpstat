@@ -1,31 +1,21 @@
 #!/usr/local/bin/bpftrace
 
 /**
- * shows the size of received and sent packets from the net device layer, both before and after software segmentation  * offload (GSO and GRO).
+ * shows the number of received and sent packets from the net device layer.
  */
 BEGIN
 {
         printf("Tracing net device send/receive. Hit Ctrl-C to end.\n");
 }
 
-tracepoint:net:netif_receive_skb
-{
-        @recv_bytes = hist(args->len);
-}
-
-tracepoint:net:net_dev_queue
-{
-        @send_bytes[str(args->name)] = hist(args->len);
-}
-
 tracepoint:net:napi_gro_receive_entry
 {
-        @nic_recv_bytes[str(args->name)] = hist(args->len);
+        @nic_send_count[str(args->name)] = count();
 }
 
 tracepoint:net:net_dev_xmit
 {
-        @nic_send_bytes[str(args->name)] = hist(args->len);
+        @nic_send_count[str(args->name)] = count();
 }
 
 interval:s:10
