@@ -6,6 +6,7 @@
 BEGIN
 {
         printf("Tracing net device send/receive. Hit Ctrl-C to end.\n");
+        @begin = nsecs;
 }
 
 tracepoint:net:napi_gro_receive_entry
@@ -31,4 +32,9 @@ interval:s:10
 
        print(@recv_bytes);
        clear(@recv_bytes);
+}
+
+END
+{
+    printf("Duration %d ms \n", (nsecs - @begin)/1000000);
 }

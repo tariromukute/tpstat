@@ -1,6 +1,17 @@
 #!/usr/local/bin/bpftrace
 
+BEGIN
+{
+        printf("Tracing net device send/receive. Hit Ctrl-C to end.\n");
+        @begin = nsecs;
+}
+
 t:syscalls:sys_enter_* 
 { 
     @[probe] = count(); 
+}
+
+END
+{
+    printf("Duration %d ms \n", (nsecs - @begin)/1000000);
 }

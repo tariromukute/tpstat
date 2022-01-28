@@ -1,5 +1,11 @@
 #!/usr/local/bin/bpftrace
 
+BEGIN
+{
+        printf("Tracing net device send/receive. Hit Ctrl-C to end.\n");
+        @begin = nsecs;
+}
+
 /**
  * There are some caveats with this approach: sk_buffs can be segmented into other sk_buffs on GSO, or attached to others on GRO. TCP can also coalesce sk_buffs (tcp_try_coalesce()). This means that, while the lifespan of the sk_buffs can be measured, the lifespan of the full packet may be undercounted. This tool could be enhanced to take these code paths into account: copying an original birth timestamp to new sk_buffs as they are created.
  */
@@ -32,4 +38,5 @@ END
 {
         clear(@is_skb_alloc);
         clear(@skb_birth);
+        printf("Duration %d ms \n", (nsecs - @begin)/1000000);
 }

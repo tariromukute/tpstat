@@ -14,6 +14,7 @@ BEGIN
         @fam2str[AF_UNIX] = "AF_UNIX";
         @fam2str[AF_INET] = "AF_INET";
         @fam2str[AF_INET6] = "AF_INET6";
+        @begin = nsecs;
 }
 
 tracepoint:syscalls:sys_enter_connect
@@ -43,4 +44,5 @@ tracepoint:syscalls:sys_exit_accept4
 END
 {
         clear(@sockaddr); clear(@fam2str);
+        printf("Duration %d ms \n", (nsecs - @begin)/1000000);
 }

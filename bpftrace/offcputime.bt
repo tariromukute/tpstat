@@ -7,6 +7,7 @@
 BEGIN
 {
         printf("Tracing nanosecond time in off-CPU stacks. Ctrl-C to end.\n");
+        @begin = nsecs;
 }
 
 kprobe:finish_task_switch
@@ -27,5 +28,6 @@ kprobe:finish_task_switch
 
 END
 {
-        clear(@start);
+        clear(@start)
+        printf("Duration %d ms \n", (nsecs - @begin)/1000000);
 }

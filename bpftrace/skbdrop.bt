@@ -5,6 +5,7 @@ BEGIN
 {
         printf("Tracing unusual skb drop stacks. Hit Ctrl-C to end.\n");
         system("nstat > /dev/null");
+        @begin = nsecs;
 }
 
 tracepoint:skb:kfree_skb
@@ -15,4 +16,9 @@ tracepoint:skb:kfree_skb
 END
 {
         system("nstat; nstat -rs > /dev/null");
+}
+END
+{
+        system("nstat; nstat -rs > /dev/null");
+        printf("Duration %d ms \n", (nsecs - @begin)/1000000);
 }
