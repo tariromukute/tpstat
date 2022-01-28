@@ -11,7 +11,7 @@ BEGIN
 
 tracepoint:net:napi_gro_receive_entry
 {
-        @nic_send_count[str(args->name)] = count();
+        @nic_recv_count[str(args->name)] = count();
 }
 
 tracepoint:net:net_dev_xmit
@@ -21,17 +21,11 @@ tracepoint:net:net_dev_xmit
 
 interval:s:10
 {
-       print(@nic_send_bytes);
-       clear(@nic_send_bytes);
+       print(@nic_recv_count);
+       clear(@nic_recv_count);
 
-       print(@nic_recv_bytes);
-       clear(@nic_recv_bytes);
-
-       print(@send_bytes);
-       clear(@send_bytes);
-
-       print(@recv_bytes);
-       clear(@recv_bytes);
+       print(@nic_send_count);
+       clear(@nic_send_count);
 }
 
 END
