@@ -34,6 +34,12 @@ kprobe:kmem_cache_free
         delete(@skb_birth[arg1]);
 }
 
+interval:s:1
+{
+        print(@skb_residency_nsecs);
+        clear(@skb_residency_nsecs);  
+}
+
 END
 {
         clear(@is_skb_alloc);

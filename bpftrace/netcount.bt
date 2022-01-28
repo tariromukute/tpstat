@@ -19,7 +19,7 @@ tracepoint:net:net_dev_xmit
         @nic_send_count[str(args->name)] = count();
 }
 
-interval:s:10
+interval:s:1
 {
        print(@nic_recv_count);
        clear(@nic_recv_count);

@@ -30,6 +30,12 @@ tracepoint:sched:sched_switch
         delete(@qtime[args->next_pid]);
 }
 
+interval:s:1
+{
+        print(@usecs);
+        clear(@usecs);  
+}
+
 END
 {
         clear(@qtime);

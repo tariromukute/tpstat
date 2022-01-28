@@ -32,6 +32,12 @@ tracepoint:net:net_dev_queue
         delete(@start[args->skbaddr]);
 }
 
+interval:s:1
+{
+        print(@us);
+        clear(@us);  
+}
+
 END
 {
         clear(@start);

@@ -11,6 +11,12 @@ t:syscalls:sys_enter_*
     @[probe] = count(); 
 }
 
+interval:s:1
+{
+        print(@);
+        clear(@);  
+}
+
 END
 {
     printf("Duration %d ms \n", (nsecs - @begin)/1000000);
