@@ -26,7 +26,7 @@ kprobe:finish_task_switch
         }
 }
 
-interval:s:1
+interval:s:5
 {
         print(@);
         clear(@);  

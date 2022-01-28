@@ -83,7 +83,7 @@ tracepoint:syscalls:sys_exit_recvfrom
     @recvfrom[args->ret] = count();
 }
 
-interval:s:60
+interval:s:5
 { 
     print(@iplocal); clear(@iplocal);
     print(@udpqueue); clear(@udpqueue);
