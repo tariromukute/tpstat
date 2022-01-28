@@ -16,9 +16,5 @@ tracepoint:skb:kfree_skb
 END
 {
         system("nstat; nstat -rs > /dev/null");
-}
-END
-{
-        system("nstat; nstat -rs > /dev/null");
         printf("Duration %d ms \n", (nsecs - @begin)/1000000);
 }
