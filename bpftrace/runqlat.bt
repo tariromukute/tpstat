@@ -32,6 +32,6 @@ tracepoint:sched:sched_switch
 
 END
 {
-        clear(@qtime)
+        clear(@qtime);
         printf("Duration %d ms \n", (nsecs - @begin)/1000000);
 }

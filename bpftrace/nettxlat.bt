@@ -34,6 +34,6 @@ tracepoint:net:net_dev_queue
 
 END
 {
-        clear(@start)
+        clear(@start);
         printf("Duration %d ms \n", (nsecs - @begin)/1000000);
 }
