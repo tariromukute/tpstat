@@ -11,7 +11,7 @@ BEGIN
 
 tracepoint:net:netif_receive_skb
 {
-        @recv_bytes = hist(args->len);
+        @recv_bytes[str(args->name)] = hist(args->len);
 }
 
 tracepoint:net:net_dev_queue
