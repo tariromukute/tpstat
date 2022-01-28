@@ -11,7 +11,7 @@ t:syscalls:sys_enter_*
     @[probe] = count(); 
 }
 
-interval:s:1
+interval:s:5
 {
         print(@);
         clear(@);  

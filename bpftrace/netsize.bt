@@ -29,7 +29,7 @@ tracepoint:net:net_dev_xmit
         @nic_send_bytes[str(args->name)] = hist(args->len);
 }
 
-interval:s:1
+interval:s:5
 {
        print(@nic_send_bytes);
        clear(@nic_send_bytes);

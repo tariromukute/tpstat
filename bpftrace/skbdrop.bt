@@ -13,7 +13,7 @@ tracepoint:skb:kfree_skb
         @[kstack(8)] = count();
 }
 
-interval:s:1
+interval:s:5
 {
         print(@);
         clear(@);  

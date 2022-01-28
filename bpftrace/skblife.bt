@@ -34,7 +34,7 @@ kprobe:kmem_cache_free
         delete(@skb_birth[arg1]);
 }
 
-interval:s:1
+interval:s:5
 {
         print(@skb_residency_nsecs);
         clear(@skb_residency_nsecs);  
