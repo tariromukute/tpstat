@@ -26,11 +26,11 @@ kprobe:finish_task_switch
         }
 }
 
-interval:s:5
-{
-        print(@);
-        clear(@);  
-}
+// interval:s:5
+// {
+//        print(@);
+//         clear(@);  
+// }
 
 END
 {
